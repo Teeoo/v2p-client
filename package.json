@@ -15,12 +15,9 @@
     "axios": "^0.21.1",
     "codemirror": "^5.63.3",
     "core-js": "^3.6.5",
-    "jsonlint-mod": "^1.7.6",
     "pinia": "^2.0.3",
     "quasar": "^2.0.0",
-    "socket.io-client": "^4.3.2",
-    "vue-i18n": "^9.0.0",
-    "vue-native-websocket-vue3": "^3.1.4"
+    "vue-i18n": "^9.0.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
