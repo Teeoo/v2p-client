@@ -1,0 +1,52 @@
+{
+  "name": "v2p-client",
+  "version": "0.0.1",
+  "description": "customize personal network",
+  "productName": "elecV2P",
+  "author": "teeoo",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "test": "echo \"No test specified\" && exit 0"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.0.0",
+    "@stomp/stompjs": "^6.1.2",
+    "axios": "^0.21.1",
+    "codemirror": "^5.63.3",
+    "core-js": "^3.6.5",
+    "jsonlint-mod": "^1.7.6",
+    "pinia": "^2.0.3",
+    "quasar": "^2.0.0",
+    "socket.io-client": "^4.3.2",
+    "vue-i18n": "^9.0.0",
+    "vue-native-websocket-vue3": "^3.1.4"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.13.14",
+    "@quasar/app": "^3.0.0",
+    "@types/codemirror": "^5.60.5",
+    "@types/node": "^12.20.21",
+    "@typescript-eslint/eslint-plugin": "^4.16.1",
+    "@typescript-eslint/parser": "^4.16.1",
+    "eslint": "^7.14.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-plugin-vue": "^7.0.0"
+  },
+  "browserslist": [
+    "last 10 Chrome versions",
+    "last 10 Firefox versions",
+    "last 4 Edge versions",
+    "last 7 Safari versions",
+    "last 8 Android versions",
+    "last 8 ChromeAndroid versions",
+    "last 8 FirefoxAndroid versions",
+    "last 10 iOS versions",
+    "last 5 Opera versions"
+  ],
+  "engines": {
+    "node": ">= 12.22.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}
