@@ -445,7 +445,35 @@ export default defineComponent({
         item.expand = true;
         taskSubList.value = await api.get(item.row.job.target);
       } catch (e) {
-
+        const notify = $q.notify({
+          type: 'negative',
+          position: 'top',
+          group: false,
+          timeout: 0,
+          spinner: true,
+          message: '获取订阅信息失败,即将尝试从服务器端获取该订阅内容'
+        });
+        setTimeout(() => {
+          api.get(`data?type=stream&url=${item.row.job.target}`).then(d => {
+            taskSubList.value = d as unknown as TaskSub;
+            notify({
+              type: 'positive',
+              icon: 'done',
+              spinner: false,
+              /* eslint-disable @typescript-eslint/no-non-null-assertion */
+              message: `成功获取任务${taskSubList.value.list!.length}条`,
+              timeout: 2500
+            });
+          }).catch(() => {
+            notify({
+              type: 'negative',
+              icon: 'done',
+              spinner: false,
+              message: '获取订阅任务失败',
+              timeout: 2500
+            });
+          });
+        }, 3000);
       }
     };
 
