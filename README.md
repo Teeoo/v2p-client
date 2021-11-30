@@ -2,7 +2,21 @@
 ```shell
 docker cp dist.zip elecv2p:/usr/local/app/web && sudo docker exec elecv2p sh -c "cd /usr/local/app/web/ && unzip dist.zip && rm -rf dist.zip"
 ```
->
+### 推荐使用命令
+```shell
+docker run --restart=always \
+-d --name elecv2p \
+-p 80:80 -p 8001:8001 -p 8002:8002 \
+-v /elecv2p/JSFile:/usr/local/app/script/JSFile \
+-v /elecv2p/Lists:/usr/local/app/script/Lists \
+-v /elecv2p/Store:/usr/local/app/script/Store \
+-v /elecv2p/Shell:/usr/local/app/script/Shell \
+-v /elecv2p/rootCA:/usr/local/app/rootCA \
+-v /elecv2p/efss:/usr/local/app/efss \
+-v /elecv2p/logs:/usr/local/app/logs \
+byxiaopeng/elecv2p
+```
+
 **注意**:目前只实现了部分功能,如若想恢复原版本请拉取官方库文件按照上面的步骤自行替换
 
 > 预览地址:[http://elecv2p.teeoo.cn/](http://elecv2p.teeoo.cn/)
