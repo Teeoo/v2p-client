@@ -13,7 +13,7 @@
       <template v-slot:body='props'>
         <q-tr :props='props'>
           <q-td key='name' :props='props'>
-            {{ props.row.name }}
+            <q-input v-model='props.row.name'/>
           </q-td>
           <q-td key='type' :props='props'>
             <div class='row'>
@@ -216,6 +216,7 @@
         <q-fab-action @click='dialog=true' label-position='top' external-label color='purple' icon='mdi-playlist-check '
                       label='订阅' />
         <q-fab-action @click='save' label-position='top' external-label color='purple' icon='save' label='保存' />
+        <q-fab-action @click='insert' label-position='top' external-label color='purple' icon='add' label='新增' />
       </q-fab>
     </q-page-sticky>
   </q-page>
@@ -403,6 +404,23 @@ export default defineComponent({
       }
     };
 
+    const insert = () => {
+      const id: string = [Math.random().toString(36).slice(-6)].toString();
+      Object.assign(task.value, {
+        [id]: {
+          'name': '新的任务',
+          'type': 'cron',
+          'time': '20 10 0 * * *',
+          'job': {
+            'type': 'exec',
+            'target': 'node -v'
+          },
+          'running': false,
+          id
+        }
+      });
+    };
+
     const insertSub = () => {
       const id: string = [Math.random().toString(36).slice(-6)].toString();
       Object.assign(task.value, {
@@ -570,7 +588,8 @@ export default defineComponent({
       filterSub,
       filterTask,
       addTask,
-      taskSubList
+      taskSubList,
+      insert
     };
   }
 });
