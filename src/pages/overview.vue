@@ -7,7 +7,7 @@
             <q-btn @click='dialog=true' flat class='full-width' color='purple' label='查看程序运行日志' icon='mdi-bug' />
           </div>
           <div class='col-12 col-md-3'>
-            <q-btn flat class='full-width' color='purple' label='EFSS 文件管理界面' icon='folder' />
+            <q-btn target="_blank" to='/efss' flat class='full-width' color='purple' label='EFSS 文件管理界面' icon='folder' />
           </div>
           <div class='col-12 col-md-3'>
             <q-btn-dropdown flat class='full-width' auto-close rounded color='purple' :disable='!view.anyproxy?.enable'

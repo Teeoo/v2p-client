@@ -53,6 +53,10 @@ const routes: RouteRecordRaw[] = [
     ]
   },
   {
+    path: '/efss',
+    component: () => import('pages/efss.vue')
+  },
+  {
     path: '/:catchAll(.*)*',
     component: () => import('pages/Error404.vue')
   }
