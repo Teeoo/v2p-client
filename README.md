@@ -3,7 +3,7 @@
 ![sshot-13](https://user-images.githubusercontent.com/25023667/144246483-4dbd0c57-8f8a-450a-9126-d457f3572ed4.png)
 - 进入到dist.zip文件保存的路径(第一步下载文件保存的路径)执行如下命令(容器名记得替换成自己的
 ```shell
-docker cp dist.zip elecv2p:/usr/local/app/web && sudo docker exec elecv2p sh -c "cd /usr/local/app/web/ && unzip dist.zip && rm -rf dist.zip"
+docker cp dist.zip elecv2p:/usr/local/app/web && sudo docker exec elecv2p sh -c "cd /usr/local/app/web/ && rm -rf dist/ && unzip dist.zip && rm -rf dist.zip"
 ```
 ![sshot-14](https://user-images.githubusercontent.com/25023667/144246493-83dc177a-2e68-43d4-b0f5-62bdeb392183.png)
 ### 推荐使用命令
