@@ -1,7 +1,11 @@
 ### 食用方法食用方法如下
+- 从https://github.com/Teeoo/v2p-client/releases这里下载最新dist文件，你也可选择Clone项目自行编译dist
+![sshot-13](https://user-images.githubusercontent.com/25023667/144246483-4dbd0c57-8f8a-450a-9126-d457f3572ed4.png)
+- 进入到dist.zip文件保存的路径(第一步下载文件保存的路径)执行如下命令
 ```shell
 docker cp dist.zip elecv2p:/usr/local/app/web && sudo docker exec elecv2p sh -c "cd /usr/local/app/web/ && unzip dist.zip && rm -rf dist.zip"
 ```
+![sshot-14](https://user-images.githubusercontent.com/25023667/144246493-83dc177a-2e68-43d4-b0f5-62bdeb392183.png)
 ### 推荐使用命令
 ```shell
 docker run --restart=always \
