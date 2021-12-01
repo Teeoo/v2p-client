@@ -56,6 +56,9 @@
               </template>
             </q-input>
           </q-card-section>
+          <q-card-section>
+            <q-toggle @update:model-value='toggle' label='打开minishell' v-model='config.minishell' />
+          </q-card-section>
         </q-tab-panel>
 
         <q-tab-panel name='2'>
@@ -421,9 +424,9 @@ export interface SearchCraft {
 }
 
 export interface Security {
-  enable: boolean
-  whitelist: string[]
-  blacklist: string[]
+  enable: boolean;
+  whitelist: string[];
+  blacklist: string[];
 }
 
 export interface Init {
@@ -569,7 +572,7 @@ export default defineComponent({
       }
     };
 
-    const security =async () => {
+    const security = async () => {
       try {
         /* eslint-disable @typescript-eslint/no-non-null-assertion */
         config.value.security!.whitelist = whitelist.value.split(',');
@@ -588,7 +591,27 @@ export default defineComponent({
           message: '保存失败咯!'
         });
       }
-    }
+    };
+
+    const toggle = async () => {
+      try {
+        await api.put('config', {
+          type: 'config',
+          data: {
+            'minishell': !config.value.minishell
+          }
+        });
+        $q.notify({
+          position: 'top',
+          message: '处理成功'
+        });
+      } catch (e) {
+        $q.notify({
+          type: 'negative',
+          message: '除了出错咯!'
+        });
+      }
+    };
 
     return {
       tab: ref('1'),
@@ -599,7 +622,7 @@ export default defineComponent({
       saveNotify,
       isPost,
       notifyConfig,
-      runjs, CONFIG_RUNJS, eAxios,blacklist,whitelist,security
+      runjs, CONFIG_RUNJS, eAxios, blacklist, whitelist, security, toggle
     };
   }
 });
