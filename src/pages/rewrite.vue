@@ -10,21 +10,30 @@
       <template v-slot:body='props'>
         <q-tr :props='props'>
           <q-td key='match' :props='props'>
-            <q-input color='pink' v-model='props.row.match' label='匹配方式' />
+            {{ props.row.match }}
+            <q-popup-edit v-model='props.row.match'>
+              <q-input type='textarea' v-model='props.row.match' dense autofocus counter label='匹配方式' />
+            </q-popup-edit>
           </q-td>
 
           <q-td key='stage' :props='props'>
-            <q-select color='pink' v-model='props.row.stage'
-                      :options="[{label: '网络请求前',value: 'req'}, {label: '数据返回前',value: 'res'}]" label='匹配阶段'
-                      option-value="value"
-                      option-label="label"
-                      emit-value
-                      map-options
-            />
+            {{ props.row.stage === 'req' ? '网络请求前' : '数据返回前' }}
+            <q-popup-edit v-model='props.row.stage'>
+              <q-select color='pink' v-model='props.row.stage'
+                        :options="[{label: '网络请求前',value: 'req'}, {label: '数据返回前',value: 'res'}]" label='匹配阶段'
+                        option-value='value'
+                        option-label='label'
+                        emit-value
+                        map-options
+              />
+            </q-popup-edit>
           </q-td>
 
           <q-td key='target' :props='props'>
-            <q-input color='pink' v-model='props.row.target' label='匹配内容' />
+            {{ props.row.target }}
+            <q-popup-edit v-model='props.row.target'>
+              <q-input type='textarea' counter color='pink' v-model='props.row.target' label='匹配内容' />
+            </q-popup-edit>
           </q-td>
 
           <q-td key='enable' :props='props'>
@@ -49,14 +58,16 @@
       transition-hide='rotate'
     >
       <q-card flat>
-        <q-bar  class="bg-white text-white">
-          <q-btn  dense flat round icon="lens" size="8.5px" color="red"  v-close-popup>
+        <q-bar class='bg-white text-white'>
+          <q-btn dense flat round icon='lens' size='8.5px' color='red' v-close-popup>
             <q-tooltip class='bg-white text-primary'>Close</q-tooltip>
           </q-btn>
-          <q-btn  dense flat round icon="lens" size="8.5px" color="yellow" @click='maximizedToggle = false' :disable='!maximizedToggle'>
+          <q-btn dense flat round icon='lens' size='8.5px' color='yellow' @click='maximizedToggle = false'
+                 :disable='!maximizedToggle'>
             <q-tooltip v-if='maximizedToggle' class='bg-white text-primary'>Minimize</q-tooltip>
           </q-btn>
-          <q-btn dense flat round icon="lens" size="8.5px" color="green"  @click='maximizedToggle = true' :disable='maximizedToggle'>
+          <q-btn dense flat round icon='lens' size='8.5px' color='green' @click='maximizedToggle = true'
+                 :disable='maximizedToggle'>
             <q-tooltip v-if='!maximizedToggle' class='bg-white text-primary'>Maximize</q-tooltip>
           </q-btn>
         </q-bar>
@@ -108,8 +119,8 @@
                           <q-select color='pink' v-model='props.row.stage'
                                     :options="[{label: '网络请求前',value: 'req'}, {label: '数据返回前',value: 'res'}]"
                                     label='匹配阶段'
-                                    option-value="value"
-                                    option-label="label"
+                                    option-value='value'
+                                    option-label='label'
                                     emit-value
                                     map-options
                           />
