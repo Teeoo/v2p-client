@@ -1,6 +1,6 @@
 <template>
-  <q-layout view='lHh Lpr lFf' v-touch-swipe.mouse.right='handleMiniShell' v-touch-hold.mouse='handleMiniShell'>
-    <q-header elevated class='bg-purple'>
+  <q-layout view='lHh Lpr lFf' v-touch-hold.mouse='handleMiniShell'>
+    <q-header elevated class='bg-purple' v-touch-swipe.mouse.right='handleMiniShell'>
       <q-toolbar>
         <q-btn flat round dense icon='menu' @click='toggleLeftDrawer' class='q-mr-sm' />
         <q-space></q-space>
@@ -74,10 +74,37 @@
                  :disable='maximizedToggle'>
             <q-tooltip v-if='!maximizedToggle' class='bg-white text-primary'>Maximize</q-tooltip>
           </q-btn>
+          <q-space />
+          <!--          <div class="col text-center text-weight-bold text-primary">-->
+          <!--            MINI-SHELL-->
+          <!--          </div>-->
+          <q-space />
+          <q-linear-progress
+            :value='status.data?.memoryusage.rss.split(" MB")[0]*0.01' color='warning'
+            :buffer="status.data?.memoryusage.rss.split(' MB')[0]*0.03"
+          >
+            <q-tooltip>
+              RSS {{ status.data?.memoryusage.rss }}
+            </q-tooltip>
+          </q-linear-progress>
+          <q-linear-progress :value='status.data?.memoryusage.heapTotal.split(" MB")[0]*0.01' color='warning'
+                             :buffer="status.data?.memoryusage.heapTotal.split(' MB')[0]*0.03"
+          >
+            <q-tooltip>
+              heapTotal {{ status.data?.memoryusage.heapTotal }}
+            </q-tooltip>
+          </q-linear-progress>
+          <q-linear-progress :value='status.data?.memoryusage.heapUsed.split(" MB")[0]*0.01' color='warning'
+                             :buffer="status.data?.memoryusage.heapUsed.split(' MB')[0]*0.03"
+          >
+            <q-tooltip>
+              heapUsed {{ status.data?.memoryusage.heapUsed }}
+            </q-tooltip>
+          </q-linear-progress>
         </q-bar>
 
         <q-card-section>
-          <q-scroll-area style='height: 65vh;' ref='scrollAreaRef'>
+          <q-scroll-area style='height: 85vh;' ref='scrollAreaRef'>
             <q-chat-message v-for='(item,k) in message' :key='k'
                             :sent='item.send'
                             :text='[item.text]'
@@ -91,10 +118,10 @@
             </q-chat-message>
           </q-scroll-area>
         </q-card-section>
-        <q-card-section class='vertical-bottom'>
+        <q-card-section class='fixed-bottom'>
           <q-input
+            :prefix='cwd'
             v-model='text'
-            type='textarea'
             @keydown.enter='listen($event)'
           />
         </q-card-section>
@@ -162,6 +189,24 @@ const menu = [
   }
 ];
 
+interface V2Pstatus {
+  type: string;
+  data: Data;
+}
+
+interface Data {
+  clients: number;
+  memoryusage: Memoryusage;
+}
+
+interface Memoryusage {
+  rss: string;
+  heapTotal: string;
+  heapUsed: string;
+  external: string;
+  arrayBuffers: string;
+}
+
 export default defineComponent({
   name: 'MainLayout',
   components: {},
@@ -169,6 +214,7 @@ export default defineComponent({
     const leftDrawerOpen = ref(false);
     const version = ref('');
     const text = ref('');
+    const cwd = ref('shell');
     const minishell = ref(false);
     const maximizedToggle = ref(true);
     const message = ref<{
@@ -176,19 +222,35 @@ export default defineComponent({
       text?: string,
       time?: Date
     }[]>([]);
+    const status = ref<Partial<V2Pstatus>>({});
     const scrollAreaRef = ref<Partial<typeof QScrollArea>>({});
     const $store = useInitStore();
     version.value = $store.getVersion;
     const ws = inject('ws') as WebSocket;
     ws.addEventListener('message', (e) => {
-      const result = JSON.parse(e.data) as Record<'type' | 'data', string>;
+      const result = JSON.parse(e.data) as Record<'type' | 'data', string | {
+        data: string,
+        type: string,
+      }>;
       if (result.type === 'minishell') {
+        const { type, data } = result.data as {
+          data: string,
+          type: string,
+        };
+        type === 'cwd' ? cwd.value = data : '';
         message.value.push({
           send: false,
-          text: result.data,
+          text: typeof result.data === 'string' ? String(result.data) : JSON.stringify(result.data),
           time: new Date()
         });
         scrollAreaRef.value.setScrollPosition('vertical', scrollAreaRef.value.getScrollTarget().scrollHeight, 300);
+      }
+    });
+
+    ws.addEventListener('message', (e) => {
+      let result = JSON.parse(e.data) as V2Pstatus;
+      if (result.type === 'elecV2Pstatus') {
+        status.value = result;
       }
     });
 
@@ -220,7 +282,7 @@ export default defineComponent({
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
       version,
-      handleMiniShell, minishell, maximizedToggle, listen, text, message, scrollAreaRef, date
+      handleMiniShell, minishell, maximizedToggle, listen, text, message, scrollAreaRef, date, cwd, status
     };
   }
 });
