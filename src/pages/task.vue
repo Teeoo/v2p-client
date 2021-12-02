@@ -13,7 +13,7 @@
       <template v-slot:body='props'>
         <q-tr :props='props'>
           <q-td key='name' :props='props'>
-            <q-input v-model='props.row.name'/>
+            <q-input v-model='props.row.name' />
           </q-td>
           <q-td key='type' :props='props'>
             <div class='row'>
@@ -223,7 +223,7 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, inject, onMounted, ref } from 'vue';
+import { defineComponent, inject, onMounted, ref, watchEffect } from 'vue';
 import { api } from 'boot/axios';
 import { useQuasar } from 'quasar';
 import { useInitStore } from 'src/store/init';
@@ -311,7 +311,12 @@ export default defineComponent({
     const isOpenLog = ref(false);
     const dialog = ref(false);
     const maximizedToggle = ref(true);
-    const pagination = ref({ sortBy: 'desc', descending: false, page: 1, rowsPerPage: 5 });
+    const pagination = ref({
+      sortBy: 'desc',
+      descending: false,
+      page: 1,
+      rowsPerPage: $q.localStorage.getItem<number>('taskPerPage') ?? 5
+    });
     const loading = ref(true);
     const message = ref<string[]>([]);
     const $store = useInitStore();
@@ -346,6 +351,10 @@ export default defineComponent({
     const loadInfo = async () => {
       task.value = await api.get('task');
     };
+
+    watchEffect(() => {
+      $q.localStorage.set('taskPerPage', pagination.value.rowsPerPage);
+    });
 
     const save = async () => {
       try {

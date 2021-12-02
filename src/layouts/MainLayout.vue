@@ -4,7 +4,11 @@
       <q-toolbar>
         <q-btn flat round dense icon='menu' @click='toggleLeftDrawer' class='q-mr-sm' />
         <q-space></q-space>
-        <q-btn type='a' target='_blank' flat round icon='mdi-github' href='https://github.com/Teeoo/v2p-client'></q-btn>
+        <q-btn type='a' target='_blank' flat round icon='mdi-github' href='https://github.com/Teeoo/v2p-client'>
+          <q-tooltip>
+            喜欢的话就贡献出你的小星星吧~
+          </q-tooltip>
+        </q-btn>
       </q-toolbar>
       <q-toolbar inset>
         <q-toolbar-title>
@@ -28,8 +32,8 @@
           <q-item-section>
             <q-item-label>elecV2P</q-item-label>
             <q-item-label caption>
-              <q-skeleton type='text' width='20%' v-show='!version' />
-              <q-badge>v{{ version }}</q-badge>
+              <q-skeleton type='text' width='20%' v-show='!$q.localStorage.getItem("version")' />
+              <q-badge class="flex flex-center" @click='upgrade'>{{ $q.localStorage.getItem('version') }}</q-badge>
             </q-item-label>
           </q-item-section>
         </q-item>
@@ -131,10 +135,11 @@
 </template>
 
 <script lang='ts'>
-import { QScrollArea } from 'quasar';
+import { QScrollArea, useQuasar } from 'quasar';
 import { useInitStore } from 'src/store/init';
 import { defineComponent, inject, onMounted, ref } from 'vue';
 import { date } from 'quasar';
+import { api } from 'boot/axios';
 
 const menu = [
   {
@@ -207,15 +212,97 @@ interface Memoryusage {
   arrayBuffers: string;
 }
 
+export interface GayHub {
+  url: string;
+  assets_url: string;
+  upload_url: string;
+  html_url: string;
+  id: number;
+  author: Author;
+  node_id: string;
+  tag_name: string;
+  target_commitish: string;
+  name: string;
+  draft: boolean;
+  prerelease: boolean;
+  created_at: string;
+  published_at: string;
+  assets: Asset[];
+  tarball_url: string;
+  zipball_url: string;
+}
+
+export interface Author {
+  login: string;
+  id: number;
+  node_id: string;
+  avatar_url: string;
+  gravatar_id: string;
+  url: string;
+  html_url: string;
+  followers_url: string;
+  following_url: string;
+  gists_url: string;
+  starred_url: string;
+  subscriptions_url: string;
+  organizations_url: string;
+  repos_url: string;
+  events_url: string;
+  received_events_url: string;
+  type: string;
+  site_admin: boolean;
+}
+
+export interface Asset {
+  url: string;
+  id: number;
+  node_id: string;
+  name: string;
+  label: string;
+  uploader: Uploader;
+  content_type: string;
+  state: string;
+  size: number;
+  download_count: number;
+  created_at: string;
+  updated_at: string;
+  browser_download_url: string;
+}
+
+export interface Uploader {
+  login: string;
+  id: number;
+  node_id: string;
+  avatar_url: string;
+  gravatar_id: string;
+  url: string;
+  html_url: string;
+  followers_url: string;
+  following_url: string;
+  gists_url: string;
+  starred_url: string;
+  subscriptions_url: string;
+  organizations_url: string;
+  repos_url: string;
+  events_url: string;
+  received_events_url: string;
+  type: string;
+  site_admin: boolean;
+}
+
+
 export default defineComponent({
   name: 'MainLayout',
   components: {},
   setup() {
+    const $q = useQuasar();
     const leftDrawerOpen = ref(false);
     const version = ref('');
     const text = ref('');
     const cwd = ref('shell');
-    const minishell = ref(false);
+    const tag_name = ref('');
+    const browser_download_url = ref('');
+    const shell = ref(false);
     const maximizedToggle = ref(true);
     const message = ref<{
       send?: boolean,
@@ -228,22 +315,36 @@ export default defineComponent({
     version.value = $store.getVersion;
     const ws = inject('ws') as WebSocket;
     ws.addEventListener('message', (e) => {
-      const result = JSON.parse(e.data) as Record<'type' | 'data', string | {
-        data: string,
-        type: string,
-      }>;
+      const result = JSON.parse(e.data) as {
+        type: string;
+        data: {
+          type: string;
+          data: string;
+        } | string;
+      };
       if (result.type === 'minishell') {
-        const { type, data } = result.data as {
-          data: string,
-          type: string,
-        };
-        type === 'cwd' ? cwd.value = data : '';
-        message.value.push({
-          send: false,
-          text: typeof result.data === 'string' ? String(result.data) : JSON.stringify(result.data),
-          time: new Date()
-        });
-        scrollAreaRef.value.setScrollPosition('vertical', scrollAreaRef.value.getScrollTarget().scrollHeight, 300);
+        let text = result.data;
+        if (typeof text !== 'string' && text !== null) {
+          const { type, data } = result.data as {
+            data: string,
+            type: string,
+          };
+          type === 'cwd' ? cwd.value = data : '';
+          text = JSON.stringify(result.data);
+        }
+        if (text && text !== '\n') {
+          message.value.push({ send: false, text: text, time: new Date() });
+          if (String(text).search('dist.zip && unzip -o dist.zip -cwd=web finished') !== -1) {
+            $q.notify({
+              position: 'top',
+              message: '升级成功按 Shift+F5 刷新缓存'
+            });
+            $q.localStorage.set('version', tag_name.value);
+          }
+        }
+        if (scrollAreaRef.value.getScrollTarget) {
+          scrollAreaRef.value.setScrollPosition('vertical', scrollAreaRef.value.getScrollTarget().scrollHeight, 300);
+        }
       }
     });
 
@@ -254,13 +355,61 @@ export default defineComponent({
       }
     });
 
-    onMounted(() => {
+    onMounted(async () => {
       ws.send(JSON.stringify({ 'type': 'ready', 'data': 'minishell' }));
       ws.send(JSON.stringify({ 'type': 'ready', 'data': 'minishell', 'id': $store.id }));
+      ws.send(JSON.stringify({ 'type': 'shell', 'data': 'cwd', 'id': $store.id }));
+      try {
+        const result: GayHub = await api.get('https://api.github.com/repos/Teeoo/v2p-client/releases/latest');
+        tag_name.value = result.tag_name;
+        browser_download_url.value = result.assets[0].browser_download_url;
+        setTimeout(() => {
+          if ($q.localStorage.getItem<string>('version') !== tag_name.value) {
+            $q.notify({
+              type: 'positive',
+              position: 'top',
+              group: false,
+              timeout: 0,
+              message: '检查到新版本,正在尝试更新'
+            });
+            void upgrade();
+          }
+        }, 3000);
+      } catch (e) {
+        $q.notify({
+          type: 'negative',
+          message: '获取版本信息失败!请检查本机是否能正常访问github'
+        });
+      }
     });
 
     const handleMiniShell = () => {
-      minishell.value = true;
+      shell.value = true;
+    };
+
+    const upgrade = () => {
+      try {
+        if (tag_name.value === $q.localStorage.getItem<string>('version')) {
+          $q.notify({
+            position: 'top',
+            message: '当前已是最新版本,无需升级'
+          });
+        } else {
+          ws.send(JSON.stringify({
+            'type': 'shell',
+            'data': `curl -L ${browser_download_url.value} -o dist.zip && unzip -o dist.zip -cwd=web`
+          }));
+          $q.notify({
+            position: 'top',
+            message: '升级任务已下发'
+          });
+        }
+      } catch (e) {
+        $q.notify({
+          type: 'negative',
+          message: '升级失败,请手动替换文件'
+        });
+      }
     };
 
     const listen = (e: KeyboardEvent) => {
@@ -282,7 +431,17 @@ export default defineComponent({
         leftDrawerOpen.value = !leftDrawerOpen.value;
       },
       version,
-      handleMiniShell, minishell, maximizedToggle, listen, text, message, scrollAreaRef, date, cwd, status
+      handleMiniShell,
+      minishell: shell,
+      maximizedToggle,
+      listen,
+      text,
+      message,
+      scrollAreaRef,
+      date,
+      cwd,
+      status,
+      upgrade
     };
   }
 });

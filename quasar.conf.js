@@ -112,7 +112,9 @@ module.exports = configure(function(ctx) {
         'Notify',
         'Loading',
         'AddressbarColor',
-        'LoadingBar'
+        'LoadingBar',
+        'LocalStorage',
+        'SessionStorage'
       ]
     },
 
