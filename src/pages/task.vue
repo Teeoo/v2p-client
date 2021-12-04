@@ -225,7 +225,7 @@
 <script lang='ts'>
 import { defineComponent, inject, onMounted, ref, watchEffect } from 'vue';
 import { api } from 'boot/axios';
-import { useQuasar } from 'quasar';
+import { date, useQuasar } from 'quasar';
 import { useInitStore } from 'src/store/init';
 
 const columns = [
@@ -337,6 +337,22 @@ export default defineComponent({
         loading.value = false;
         ws.send(JSON.stringify({ 'type': 'ready', 'data': 'tasklog', 'id': $store.id }));
         ws.send(JSON.stringify({ 'type': 'ready', 'data': 'task', 'id': $store.id }));
+        // 也许会有意想不到的BUG,待测
+        if (!date.isSameDate($q.localStorage.getItem<Date>('taskUpdate') ?? 0, new Date(), 'day')) {
+          Object.values(task.value).forEach(v => {
+            if (v?.type === 'sub') {
+              //TODO:更新订阅
+            } else {
+              if (v?.job.type === 'runjs') {
+                ws.send(JSON.stringify({
+                  'type': 'shell',
+                  'data': `$download ${v?.job.target} -cwd=script/JSFile`
+                }));
+              }
+            }
+          });
+          $q.localStorage.set('taskUpdate', new Date());
+        }
       } catch (e) {
         $q.notify({
           color: 'negative',
