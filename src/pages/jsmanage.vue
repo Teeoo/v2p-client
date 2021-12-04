@@ -1,5 +1,6 @@
 <template>
-  <q-page>
+  <q-page
+    v-touch-hold.mouse='()=>handleSwipe=!handleSwipe'>
     <q-card flat>
       <q-card-section>
         <div class='row'>
@@ -136,7 +137,7 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    <q-page-sticky position='bottom-right' :offset='[18, 18]'>
+    <q-page-sticky v-show='handleSwipe' position='bottom-right' :offset='[18, 18]'>
       <q-fab
         v-model='draggingFab'
         color='purple'
@@ -192,7 +193,7 @@ export default defineComponent({
     const isOpenLog = ref(false);
     const downloadForm = ref(null);
     const draggingFab = ref(false);
-
+    const handleSwipe=ref(false)
 
     const message = ref<string[]>([]);
     const ws = inject('ws') as WebSocket;
@@ -369,7 +370,8 @@ export default defineComponent({
       isOpenLog,
       message,
       draggingFab,
-      validation
+      validation,
+      handleSwipe
     };
   }
 });

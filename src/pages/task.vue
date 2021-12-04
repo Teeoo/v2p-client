@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <q-page v-touch-hold.mouse='()=>handleSwipe=!handleSwipe'>
     <q-table
       flat
       row-key='name'
@@ -203,7 +203,7 @@
         </q-card-section>
       </q-card>
     </q-dialog>
-    <q-page-sticky position='bottom-right' :offset='[18, 18]'>
+    <q-page-sticky v-show='handleSwipe' position='bottom-right' :offset='[18, 18]'>
       <q-fab
         v-model='draggingFab'
         color='purple'
@@ -311,6 +311,7 @@ export default defineComponent({
     const isOpenLog = ref(false);
     const dialog = ref(false);
     const maximizedToggle = ref(true);
+    const handleSwipe=ref(false)
     const pagination = ref({
       sortBy: 'desc',
       descending: false,
@@ -614,7 +615,8 @@ export default defineComponent({
       filterTask,
       addTask,
       taskSubList,
-      insert
+      insert,
+      handleSwipe
     };
   }
 });

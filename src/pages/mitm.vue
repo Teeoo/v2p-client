@@ -1,5 +1,5 @@
 <template>
-  <q-page>
+  <q-page v-touch-hold.mouse='()=>handleSwipe=!handleSwipe'>
     <q-table
       flat
       separator='none'
@@ -27,7 +27,7 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky position='bottom-right' :offset='[18, 18]'>
+    <q-page-sticky v-show='handleSwipe' position='bottom-right' :offset='[18, 18]'>
       <q-fab
         v-model='draggingFab'
         color='purple'
@@ -124,6 +124,7 @@ export default defineComponent({
     const mitm = ref<Partial<Mitm>>({});
     const draggingFab = ref(false);
     const dialog = ref(false);
+    const handleSwipe = ref(false);
     const commonName = ref('elecV2P');
     const overwrite = ref(false);
 
@@ -264,7 +265,8 @@ export default defineComponent({
       overwrite,
       generate,
       tempcaches,
-      clear
+      clear,
+      handleSwipe
     };
   }
 });

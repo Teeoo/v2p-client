@@ -1,6 +1,6 @@
 <template>
-  <q-layout view='lHh Lpr lFf' v-touch-hold.mouse='handleMiniShell'>
-    <q-header elevated class='bg-purple' v-touch-swipe.mouse.right='handleMiniShell'>
+  <q-layout view='lHh Lpr lFf'>
+    <q-header elevated class='bg-purple' v-touch-hold.mouse='handleMiniShell' v-touch-swipe.mouse.right='handleMiniShell'>
       <q-toolbar>
         <q-btn flat round dense icon='menu' @click='toggleLeftDrawer' class='q-mr-sm' />
         <q-space></q-space>

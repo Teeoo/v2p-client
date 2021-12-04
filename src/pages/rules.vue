@@ -1,5 +1,7 @@
 <template>
-  <q-page>
+  <q-page
+    v-touch-hold.mouse='()=>handleSwipe=!handleSwipe'
+  >
     <q-table
       flat
       separator='none'
@@ -19,8 +21,8 @@
 
           <q-td key='ctype' :props='props'>
             <q-select color='pink' v-model='props.row.ctype' :options='ctype'
-                      option-value="val"
-                      option-label="label"
+                      option-value='val'
+                      option-label='label'
                       emit-value
                       map-options label='修改方式' />
           </q-td>
@@ -31,8 +33,8 @@
 
           <q-td key='stage' :props='props'>
             <q-select color='pink' v-model='props.row.stage' :options='stage'
-                      option-value="val"
-                      option-label="label"
+                      option-value='val'
+                      option-label='label'
                       emit-value
                       map-options
                       label='修改时间' />
@@ -51,7 +53,7 @@
         </q-tr>
       </template>
     </q-table>
-    <q-page-sticky position='bottom-right' :offset='[18, 18]'>
+    <q-page-sticky v-show='handleSwipe' position='bottom-right' :offset='[18, 18]'>
       <q-fab
         v-model='draggingFab'
         color='purple'
@@ -66,6 +68,7 @@
 </template>
 
 <script lang='ts'>
+
 import { defineComponent, onMounted, ref } from 'vue';
 import { api } from 'boot/axios';
 import { useQuasar } from 'quasar';
@@ -85,7 +88,7 @@ const ctype = [
   { label: '307 重定向', val: '307' },
   { label: '阻止', val: 'block' },
   { label: '$HOLD', val: 'hold' },
-  { label: 'User-Agent', val: 'ua' },
+  { label: 'User-Agent', val: 'ua' }
 ];
 const stage = [{ label: '网络请求前', val: 'req' }, { label: '数据返回前', val: 'res' }];
 
@@ -132,6 +135,7 @@ export default defineComponent({
     const rule = ref<Partial<Rules>>({});
     const header = ref(columns);
     const draggingFab = ref(false);
+    const handleSwipe = ref(false);
     const pagination = ref({ sortBy: 'desc', descending: false, page: 1, rowsPerPage: 5 });
     onMounted(async () => {
       try {
@@ -186,7 +190,7 @@ export default defineComponent({
     };
 
     return {
-      rule, header, mtype, ctype, stage, del, save, draggingFab, insert, pagination
+      rule, header, mtype, ctype, stage, del, save, draggingFab, insert, pagination, handleSwipe
     };
   }
 });

@@ -1,5 +1,7 @@
 <template>
-  <q-page>
+  <q-page
+    v-touch-hold.mouse='()=>handleSwipe=!handleSwipe'
+  >
     <q-table
       flat
       separator='none'
@@ -145,7 +147,7 @@
             </template>
           </q-table>
         </q-card-section>
-        <q-page-sticky position='bottom-right' :offset='[18, 18]'>
+        <q-page-sticky v-show='handleSwipe' position='bottom-right' :offset='[18, 18]'>
           <q-fab
             v-model='draggingFab'
             color='purple'
@@ -159,7 +161,7 @@
         </q-page-sticky>
       </q-card>
     </q-dialog>
-    <q-page-sticky position='bottom-right' :offset='[18, 18]'>
+    <q-page-sticky v-show='handleSwipe' position='bottom-right' :offset='[18, 18]'>
       <q-fab
         v-model='draggingFab'
         color='purple'
@@ -245,6 +247,7 @@ export default defineComponent({
     const maximizedToggle = ref(true);
     const pagination = ref({ sortBy: 'desc', descending: false, page: 1, rowsPerPage: 5 });
     const paginationSub = ref({ sortBy: 'desc', descending: false, page: 1, rowsPerPage: 5 });
+    const handleSwipe = ref(false);
     onMounted(async () => {
       try {
         const data: RewriteLists = await api.get('data?type=rewritelists');
@@ -361,7 +364,8 @@ export default defineComponent({
       dialog,
       maximizedToggle,
       delSubRes,
-      getContent
+      getContent,
+      handleSwipe
     };
   }
 });
