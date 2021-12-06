@@ -5,7 +5,7 @@
       <q-card-section>
         <div class='row'>
           <div class='col-12 col-md-6'>
-            <q-input @blur='validation' :error-message='errMsg' counter v-model='downFile' label='远程JS链接' dense
+            <q-input @blur='validation' counter v-model='downFile' label='远程JS链接' dense
                      :rules='[
                          val => val && val.length > 0 || "请填写url",
                          val => val && /^((http|https):\/\/)?(([A-Za-z0-9]+-[A-Za-z0-9]+|[A-Za-z0-9]+)\.)+([A-Za-z]+)[/\?\:]?.*$/.test(val) || "请输入正确的url"
@@ -41,7 +41,7 @@
         </div>
       </q-card-section>
       <q-card-section>
-        <div class='text-h6 text-center'>store/cookie 常量储存管理 - {{ store.length }}</div>
+        <div class='text-h6 text-center' @click='alertStore=true'>store/cookie 常量储存管理 - {{ store.length }}</div>
       </q-card-section>
       <q-card-section>
         <q-chip clickable dense @remove='storeAction("delete",item)' size='18px' icon='mdi-cookie-settings '
@@ -52,7 +52,7 @@
         </q-chip>
       </q-card-section>
       <q-card-section>
-        <div class='text-h6 text-center'>当前服务器 JS 文件 - {{ manage.jslists?.length }}</div>
+        <div class='text-h6 text-center' @click='alertJs=true'>当前服务器 JS 文件 - {{ manage.jslists?.length }}</div>
       </q-card-section>
       <q-card-section>
         <q-chip clickable @click='jsHandler(item)' dense @remove='delJs(item)' size='18px' icon='mdi-nodejs'
@@ -193,7 +193,7 @@ export default defineComponent({
     const isOpenLog = ref(false);
     const downloadForm = ref(null);
     const draggingFab = ref(false);
-    const handleSwipe=ref(false)
+    const handleSwipe = ref(false);
 
     const message = ref<string[]>([]);
     const ws = inject('ws') as WebSocket;
@@ -273,6 +273,9 @@ export default defineComponent({
       alertJs.value = true;
       try {
         jsContent.value = await api.get(`jsfile?jsfn=${f}`);
+        if (typeof jsContent.value === typeof 0) {
+          jsContent.value = String(jsContent.value);
+        }
       } catch (e) {
         $q.notify({
           type: 'negative',
