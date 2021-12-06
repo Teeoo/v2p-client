@@ -202,7 +202,7 @@
       </q-card-section>
     </q-card>
   </q-page>
-  <q-footer elevated class='bg-white'>
+  <q-footer elevated :class='$q.dark.isActive ? "q-dark":"bg-white"'>
     <q-toolbar>
       <q-btn disable flat color='primary' :label='`VERSION: ${view.version}`'>
         <q-badge color='red' rounded floating />
