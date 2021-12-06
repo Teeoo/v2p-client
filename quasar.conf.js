@@ -114,7 +114,8 @@ module.exports = configure(function(ctx) {
         'AddressbarColor',
         'LoadingBar',
         'LocalStorage',
-        'SessionStorage'
+        'SessionStorage',
+        'AppFullscreen'
       ]
     },
 

@@ -1,6 +1,7 @@
 <template>
   <q-layout view='lHh Lpr lFf'>
-    <q-header elevated class='bg-purple' v-touch-hold.mouse='handleMiniShell' v-touch-swipe.mouse.right='handleMiniShell'>
+    <q-header elevated class='bg-purple' v-touch-hold.mouse='handleMiniShell'
+              v-touch-swipe.mouse.right='handleMiniShell'>
       <q-toolbar>
         <q-btn flat round dense icon='menu' @click='toggleLeftDrawer' class='q-mr-sm' />
         <q-space></q-space>
@@ -33,7 +34,7 @@
             <q-item-label>elecV2P</q-item-label>
             <q-item-label caption>
               <q-skeleton type='text' width='20%' v-show='!$q.localStorage.getItem("version")' />
-              <q-badge class="flex flex-center" @click='upgrade'>{{ $q.localStorage.getItem('version') }}</q-badge>
+              <q-badge class='flex flex-center' @click='upgrade'>{{ $q.localStorage.getItem('version') }}</q-badge>
             </q-item-label>
           </q-item-section>
         </q-item>
@@ -49,11 +50,13 @@
           </q-item-section>
         </q-item>
       </q-list>
-      <div class='fixed-bottom text-center light text-italic'>
-        <q-toolbar>
-          <!-- TODO:设置 -->
-        </q-toolbar>
-      </div>
+      <q-toolbar class='fixed-bottom'>
+        <q-btn @click='$q.fullscreen.toggle()' flat round dense
+               :icon="$q.fullscreen.isActive ? 'fullscreen_exit' : 'fullscreen'" class='q-mr-sm' />
+        <q-space />
+        <q-btn @click='dark' flat round dense
+               :icon="!$q.dark.isActive?'mdi-weather-night':'mdi-white-balance-sunny'" class='q-mr-sm' />
+      </q-toolbar>
     </q-drawer>
     <q-page-container>
       <router-view />
@@ -314,6 +317,7 @@ export default defineComponent({
     const $store = useInitStore();
     version.value = $store.getVersion;
     const ws = inject('ws') as WebSocket;
+
     ws.addEventListener('message', (e) => {
       const result = JSON.parse(e.data) as {
         type: string;
@@ -356,6 +360,7 @@ export default defineComponent({
     });
 
     onMounted(async () => {
+      $q.dark.set($q.localStorage.getItem<boolean>('dark') ?? false);
       ws.send(JSON.stringify({ 'type': 'ready', 'data': 'minishell' }));
       ws.send(JSON.stringify({ 'type': 'ready', 'data': 'minishell', 'id': $store.id }));
       ws.send(JSON.stringify({ 'type': 'shell', 'data': 'cwd', 'id': $store.id }));
@@ -424,6 +429,11 @@ export default defineComponent({
       e.preventDefault();
     };
 
+    const dark = () => {
+      $q.dark.toggle();
+      $q.localStorage.set('dark', $q.dark.isActive);
+    };
+
     return {
       menuList: menu,
       leftDrawerOpen,
@@ -441,7 +451,8 @@ export default defineComponent({
       date,
       cwd,
       status,
-      upgrade
+      upgrade,
+      dark
     };
   }
 });
