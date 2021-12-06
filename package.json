@@ -4,6 +4,7 @@
   "description": "customize personal network",
   "productName": "elecV2P",
   "author": "teeoo",
+
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",

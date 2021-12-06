@@ -231,7 +231,56 @@
 
         <q-tab-panel name='6'>
           <q-card-section>
-            TODO:
+            <q-input v-model='config.init.runjs' prefix='启动时运行脚本:'
+                     hint='python-install.js, feed.js, process.env.js（多个脚本请使用英文逗号进行分隔）'>
+              <template v-slot:after>
+                <q-btn flat label='保存' color='pink' @click='saveInit("init",config.init)' />
+              </template>
+            </q-input>
+          </q-card-section>
+          <q-card-section>
+            <q-input v-model='config.webUI.port' prefix='webUI 主界面端口:'
+                     hint='端口类设置改变的是 elecV2P 相关端口，如使用 Docker，映射端口也应做相应修改'>
+              <template v-slot:after>
+                <q-btn flat label='保存' color='pink' @click='saveInit("webUI",config.webUI)' />
+              </template>
+            </q-input>
+          </q-card-section>
+
+          <q-card-section>
+            <div class='row'>
+              <div class='col-12 col-md-6'>
+                <q-input v-model='config.anyproxy.port' prefix='代理端口:' />
+              </div>
+              <div class='col-12 col-md-6'>
+                <q-input v-model='config.anyproxy.webPort' prefix='网络请求查看端口:'>
+                  <template v-slot:after>
+                    <q-btn flat label='保存' color='pink' @click='saveInit("anyproxy",config.anyproxy)' />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+          </q-card-section>
+
+          <q-card-section>
+            <q-toggle @update:model-value='toggleAnyproxy' label='ANYPROXY 设置' v-model='config.anyproxy.enable' />
+          </q-card-section>
+
+          <q-card-section>
+            <q-page-sticky position='bottom-right' :offset='[50, 18]'>
+              <q-fab
+                :model-value='true'
+                color='purple'
+                icon='keyboard_arrow_left'
+                direction='up'
+              >
+                <q-fab-action @click='checkUpdate' color='primary' label='检测更新 elecV2P' />
+                <q-fab-action color='secondary' label='重启 elecV2P' @click='action("restart")' />
+                <q-fab-action color='red' label='关闭 elecV2P' @click='action("stop")' />
+                <q-fab-action :href='`/config?token=${config.wbrtoken}`' color='purple' label='导出当前配置文件' />
+                <q-fab-action color='amber' label='导入配置文件' />
+              </q-fab>
+            </q-page-sticky>
           </q-card-section>
         </q-tab-panel>
 
@@ -275,12 +324,35 @@
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
+
+    <q-dialog v-model='dialog' position='bottom'>
+      <q-card flat>
+        <q-linear-progress :value='1' color='pink' />
+        <q-card-section class='row items-center no-wrap'>
+          <div>
+            <div class='text-weight-bold'>请输入 webhook token，进行{{ isStop ? '停止' : '重启' }}</div>
+            <div class='text-grey'>elecV2P 将尝试使用 pm2 命令进行{{ isStop ? '停止' : '重启' }}操作</div>
+            <div class='text-grey' v-show='isStop'>关闭后 webUI/定时任务/ANYPROXY 都将不可用</div>
+            <q-input prefix='webhook token:' v-model='token' />
+          </div>
+          <q-space />
+          <q-card-actions vertical>
+            <q-btn flat color='pink' @click='save'>确定</q-btn>
+          </q-card-actions>
+        </q-card-section>
+        <q-card-section v-show='message'>
+          {{ message }}
+        </q-card-section>
+      </q-card>
+    </q-dialog>
+
   </q-page>
 </template>
 <script lang='ts'>
 import { defineComponent, onMounted, ref } from 'vue';
 import { api } from 'boot/axios';
 import { useQuasar } from 'quasar';
+import { useInitStore } from 'src/store/init';
 
 export interface Setting {
   homepage: string;
@@ -291,6 +363,7 @@ export interface Setting {
   uagent: Uagent;
   wbrtoken: string;
   minishell: boolean;
+  newversion: string;
   security: Security;
   init: Init;
   anyproxy: Anyproxy;
@@ -450,9 +523,14 @@ export default defineComponent({
     const $q = useQuasar();
     const config = ref<Partial<Setting>>({});
     const isPost = ref(false);
+    const dialog = ref(false);
+    const isStop = ref(false);
     const CONFIG_RUNJS = ref('');
     const whitelist = ref('');
     const blacklist = ref('');
+    const token = ref('');
+    const message = ref('');
+    const $state = useInitStore();
     onMounted(async () => {
       try {
         config.value = await api.get('config?type=setting');
@@ -463,6 +541,7 @@ export default defineComponent({
         CONFIG_RUNJS.value = config.value.CONFIG_RUNJS!.white.list.toString();
         whitelist.value = config.value.security!.whitelist.toString();
         blacklist.value = config.value.security!.blacklist.toString();
+        token.value = config.value.wbrtoken ?? '';
       } catch (e) {
         $q.notify({
           type: 'negative',
@@ -497,6 +576,29 @@ export default defineComponent({
       try {
         const result: Record<'message', string> = await api.put('feed', {
           type, data
+        });
+        $q.notify({
+          position: 'top',
+          message: result.message
+        });
+      } catch (e) {
+        $q.notify({
+          type: 'negative',
+          message: '保存失败咯!'
+        });
+      }
+    };
+
+    const saveInit = async (type: string, data: Init | WebUi | Anyproxy) => {
+      try {
+        let req: { CONFIG_init?: Init } | WebUi = { CONFIG_init: data as Init };
+        if (type === 'webUI') {
+          req = data as WebUi;
+        } else if (type === 'anyproxy') {
+          req = data as Anyproxy;
+        }
+        const result: Record<'message', string> = await api.put('config', {
+          type, data: req
         });
         $q.notify({
           position: 'top',
@@ -613,6 +715,49 @@ export default defineComponent({
       }
     };
 
+    const toggleAnyproxy = async (b: boolean) => {
+      config.value.anyproxy!.enable = b;
+      void await saveInit('anyproxy', config.value.anyproxy as Anyproxy);
+    };
+
+    const checkUpdate = () => {
+      if (config.value.newversion !== $state.getVersion) {
+        $q.notify({
+          message: '检测到新版本 v3.5.4\n' +
+            '请手动运行 softupdate.js 或者使用 docker 命令进行更新\n' +
+            '（等 softupdate.js 稳定后将会集成到这里实现自动更新）',
+          multiLine: true,
+          position: 'top'
+        });
+      } else {
+        $q.notify({
+          position: 'top',
+          message: '无需更新'
+        });
+      }
+    };
+
+    const save = async () => {
+      try {
+        message.value = JSON.stringify(await api.post('webhook', {
+          'token': token.value,
+          'type': 'shell',
+          'command': `${isStop.value ? 'pm2 stop elecV2P' : 'pm2 restart elecV2P'}`
+        }));
+      } catch (e) {
+        message.value = JSON.stringify(e);
+      }
+      isStop.value = false;
+    };
+
+    const action = (type: string) => {
+      dialog.value = true;
+      if (type === 'stop') {
+        isStop.value = true;
+      }
+    };
+
+
     return {
       tab: ref('1'),
       splitterModel: ref(20),
@@ -622,7 +767,23 @@ export default defineComponent({
       saveNotify,
       isPost,
       notifyConfig,
-      runjs, CONFIG_RUNJS, eAxios, blacklist, whitelist, security, toggle
+      runjs,
+      CONFIG_RUNJS,
+      eAxios,
+      blacklist,
+      whitelist,
+      security,
+      toggle,
+      saveInit,
+      toggleAnyproxy,
+      checkUpdate,
+      save,
+      dialog,
+      token,
+      message,
+      stop,
+      action,
+      isStop
     };
   }
 });
