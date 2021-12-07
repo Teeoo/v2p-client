@@ -23,7 +23,7 @@ byxiaopeng/elecv2p
 
 **注意**:目前只实现了部分功能,如若想恢复原版本请拉取官方库文件按照上面的步骤自行替换
 
-> 预览地址:[http://elecv2p.teeoo.cn/](http://elecv2p.teeoo.cn/)
+> 预览地址:[http://elecv2p.teeoo.cn/](http://elecv2p.teeoo.cn/) 用户名密码:teeoo/teeoo
 
 ### 预览图
 
