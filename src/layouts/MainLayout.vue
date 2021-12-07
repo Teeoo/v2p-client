@@ -34,7 +34,7 @@
             <q-item-label>elecV2P</q-item-label>
             <q-item-label caption>
               <q-skeleton type='text' width='20%' v-show='!$q.localStorage.getItem("version")' />
-              <q-badge class='flex flex-center' @click='upgrade'>{{ $q.localStorage.getItem('version') }}</q-badge>
+              <q-badge class='flex flex-center' v-show='$q.localStorage.getItem("version")' @click='upgrade'>{{ $q.localStorage.getItem('version') }}</q-badge>
             </q-item-label>
           </q-item-section>
         </q-item>
@@ -373,10 +373,7 @@ export default defineComponent({
           setTimeout(() => {
             if ($q.localStorage.getItem<string>('version') !== tag_name.value) {
               $q.notify({
-                type: 'positive',
                 position: 'top',
-                group: false,
-                timeout: 0,
                 message: '检查到新版本,正在尝试更新'
               });
               void upgrade();
@@ -405,7 +402,14 @@ export default defineComponent({
         } else {
           ws.send(JSON.stringify({
             'type': 'shell',
-            'data': `curl -L ${browser_download_url.value} -o dist.zip && unzip -o dist.zip -cwd=web`
+            'data': `
+              if ! type curl >/dev/null 2>&1; then
+                  echo 'curl 未安装,正在安装curl';
+                  apk add curl --repository s/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g && curl -L ${browser_download_url.value} -o dist.zip && unzip -o dist.zip -cwd=web;
+              else
+                  curl -L ${browser_download_url.value} -o dist.zip && unzip -o dist.zip -cwd=web;
+              fi
+            `
           }));
           $q.notify({
             position: 'top',
