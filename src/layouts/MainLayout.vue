@@ -1,6 +1,6 @@
 <template>
   <q-layout view='lHh Lpr lFf'>
-    <q-header elevated class='bg-purple' v-touch-hold.mouse='handleMiniShell'
+    <q-header elevated :class='$q.dark.isActive ? "q-dark":"bg-purple"' v-touch-hold.mouse='handleMiniShell'
               v-touch-swipe.mouse.right='handleMiniShell'>
       <q-toolbar>
         <q-btn flat round dense icon='menu' @click='toggleLeftDrawer' class='q-mr-sm' />
@@ -360,31 +360,34 @@ export default defineComponent({
     });
 
     onMounted(async () => {
-      $q.dark.set($q.localStorage.getItem<boolean>('dark') ?? false);
+      $q.dark.set($q.localStorage.getItem<boolean>('dark') ?? 'auto');
       ws.send(JSON.stringify({ 'type': 'ready', 'data': 'minishell' }));
       ws.send(JSON.stringify({ 'type': 'ready', 'data': 'minishell', 'id': $store.id }));
       ws.send(JSON.stringify({ 'type': 'shell', 'data': 'cwd', 'id': $store.id }));
-      try {
-        const result: GayHub = await api.get('https://api.github.com/repos/Teeoo/v2p-client/releases/latest');
-        tag_name.value = result.tag_name;
-        browser_download_url.value = result.assets[0].browser_download_url;
-        setTimeout(() => {
-          if ($q.localStorage.getItem<string>('version') !== tag_name.value) {
-            $q.notify({
-              type: 'positive',
-              position: 'top',
-              group: false,
-              timeout: 0,
-              message: '检查到新版本,正在尝试更新'
-            });
-            void upgrade();
-          }
-        }, 3000);
-      } catch (e) {
-        $q.notify({
-          type: 'negative',
-          message: '获取版本信息失败!请检查本机是否能正常访问github'
-        });
+      if (!date.isSameDate($q.localStorage.getItem<Date>('verCheck') ?? 0, new Date(), 'day')) {
+        try {
+          $q.localStorage.set('verCheck', new Date());
+          const result: GayHub = await api.get('https://api.github.com/repos/Teeoo/v2p-client/releases/latest');
+          tag_name.value = result.tag_name;
+          browser_download_url.value = result.assets[0].browser_download_url;
+          setTimeout(() => {
+            if ($q.localStorage.getItem<string>('version') !== tag_name.value) {
+              $q.notify({
+                type: 'positive',
+                position: 'top',
+                group: false,
+                timeout: 0,
+                message: '检查到新版本,正在尝试更新'
+              });
+              void upgrade();
+            }
+          }, 3000);
+        } catch (e) {
+          $q.notify({
+            type: 'negative',
+            message: '获取版本信息失败!请检查本机是否能正常访问github'
+          });
+        }
       }
     });
 

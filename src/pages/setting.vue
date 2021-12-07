@@ -3,7 +3,7 @@
     <q-card flat>
       <q-tabs
         v-model='tab'
-        class='bg-purple text-white'
+        :class='$q.dark.isActive ? "q-dark text-white":"bg-purple text-white"'
         align='justify'
         narrow-indicator
       >
