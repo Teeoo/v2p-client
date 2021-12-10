@@ -4,7 +4,6 @@
   "description": "customize personal network",
   "productName": "elecV2P",
   "author": "teeoo",
-
   "private": true,
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
@@ -12,7 +11,6 @@
   },
   "dependencies": {
     "@quasar/extras": "^1.0.0",
-    "@stomp/stompjs": "^6.1.2",
     "axios": "^0.21.1",
     "codemirror": "^5.63.3",
     "core-js": "^3.6.5",
