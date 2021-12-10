@@ -23,7 +23,7 @@
 <script lang="ts" setup>
 import { QScrollArea, date } from 'quasar';
 import { useInitStore } from '../../store/init';
-import { ref, inject, onMounted } from 'vue';
+import { ref, inject } from 'vue';
 
 const $store = useInitStore();
 const message = ref<
@@ -38,9 +38,6 @@ const cwd = ref('shell');
 const ws = inject('ws') as WebSocket;
 const text = ref('');
 
-onMounted(() => {
-  console.log(111);
-});
 ws.send(JSON.stringify({ type: 'shell', data: 'cwd', id: $store.id }));
 ws.addEventListener('message', (e) => {
   const result = JSON.parse(e.data) as {
@@ -66,7 +63,8 @@ ws.addEventListener('message', (e) => {
       message.value.push({ send: false, text: text, time: new Date() });
     }
     if (scrollAreaRef.value.getScrollTarget) {
-      scrollAreaRef.value.setScrollPosition(
+      /* eslint-disable @typescript-eslint/no-non-null-assertion */
+      scrollAreaRef.value.setScrollPosition!(
         'vertical',
         scrollAreaRef.value.getScrollTarget().scrollHeight,
         300
@@ -83,9 +81,10 @@ const listen = (e: KeyboardEvent) => {
     time: new Date(),
   });
   text.value = '';
-  scrollAreaRef.value.setScrollPosition(
+  /* eslint-disable @typescript-eslint/no-non-null-assertion */
+  scrollAreaRef.value.setScrollPosition!(
     'vertical',
-    scrollAreaRef.value.getScrollTarget().scrollHeight,
+    scrollAreaRef.value.getScrollTarget!().scrollHeight,
     300
   );
   e.preventDefault();

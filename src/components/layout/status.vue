@@ -31,20 +31,8 @@
 </template>
 <script setup lang="ts">
 import { inject, ref } from 'vue';
+import { V2Pstatus } from './layout';
 
-interface V2Pstatus {
-  type: string;
-  data: {
-    clients: number;
-    memoryusage: {
-      rss: string;
-      heapTotal: string;
-      heapUsed: string;
-      external: string;
-      arrayBuffers: string;
-    };
-  };
-}
 const ws = inject('ws') as WebSocket;
 const status = ref<Partial<V2Pstatus>>({});
 

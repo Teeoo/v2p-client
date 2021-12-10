@@ -18,7 +18,7 @@
             />
             <q-badge
               class="flex flex-center"
-              v-show="!$q.localStorage.getItem('version')"
+              v-show="$q.localStorage.getItem('version')"
               @click="upgrade"
             >
               {{ $q.localStorage.getItem('version') }}
