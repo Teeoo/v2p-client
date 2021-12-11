@@ -74,7 +74,7 @@
 
         <q-td key="action" :props="props">
           <q-btn
-            @click="del(props.pageIndex)"
+            @click="del(props.rowIndex)"
             size="sm"
             flat
             color="pink"
