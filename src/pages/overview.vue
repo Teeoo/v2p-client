@@ -6,7 +6,12 @@
   <q-footer elevated :class="$q.dark.isActive ? 'q-dark' : 'bg-white'">
     <q-toolbar>
       <q-btn disable flat color="primary" :label="`VERSION: ${view.version}`">
-        <q-badge color="red" rounded floating />
+        <q-badge
+          color="red"
+          rounded
+          floating
+          v-if="view.version !== view.newversion"
+        />
       </q-btn>
       <q-space />
       <q-btn
