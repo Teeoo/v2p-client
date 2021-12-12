@@ -2,6 +2,7 @@
   <q-card-section>
     <div class="text-h6 text-center" @click="dialog = true">
       当前服务器 JS 文件 - {{ manage.jslists?.length }}
+      <q-tooltip> 单击则新增Js </q-tooltip>
     </div>
   </q-card-section>
   <q-card-section>

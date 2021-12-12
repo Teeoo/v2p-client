@@ -1,7 +1,8 @@
 <template>
   <q-card-section>
-    <div class="text-h6 text-center">
+    <div class="text-h6 text-center" @click="dialog = true">
       store/cookie 常量储存管理 - {{ store.length }}
+      <q-tooltip> 单击则新增Store </q-tooltip>
     </div>
   </q-card-section>
   <q-card-section>
