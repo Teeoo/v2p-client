@@ -55,6 +55,15 @@
         class="q-mr-sm"
       />
       <q-space />
+      <iframe
+        src="https://ghbtns.com/github-btn.html?user=teeoo&repo=v2p-client&type=star&count=true"
+        frameborder="0"
+        scrolling="0"
+        width="100px"
+        height="20px"
+      >
+      </iframe>
+      <q-space />
       <q-btn
         @click="dark"
         flat
