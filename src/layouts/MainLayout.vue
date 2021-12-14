@@ -132,14 +132,14 @@ ws.addEventListener('message', (e) => {
   if (result.type === 'minishell') {
     let text = result.data;
     if (
-      String(text).search('dist.zip && unzip -o dist.zip -cwd=web finished') !==
-      -1
+      String(text).search('dist.zip && unzip -o dist.zip -cwd=web') !== -1 &&
+      String(text).search('finished') !== -1
     ) {
       $q.notify({
         position: 'top',
         message: '升级成功按 Shift+F5 刷新缓存',
       });
-      $q.localStorage.set('version', $store.tag_name);
+      $q.localStorage.set('version', $store.tag_name ?? '未知版本');
     }
   }
 });
