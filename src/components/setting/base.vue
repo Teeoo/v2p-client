@@ -40,18 +40,7 @@
         <q-icon name="mdi-link-variant" />
       </template>
       <template v-slot:append>
-        <q-btn
-          round
-          dense
-          flat
-          icon="mdi-restart"
-          @click="
-            $q.notify({
-              position: 'top',
-              message: '啊啊啊啊,这里还没写啊',
-            })
-          "
-        />
+        <q-btn round dense flat icon="mdi-restart" @click="uuid" />
       </template>
       <template v-slot:after>
         <q-btn
@@ -63,13 +52,6 @@
       </template>
     </q-input>
   </q-card-section>
-  <!-- <q-card-section>
-    <q-toggle
-      @update:model-value="toggle"
-      label="打开minishell"
-      v-model="config.minishell"
-    />
-  </q-card-section> -->
 </template>
 <script setup lang="ts">
 import { Setting } from './setting';
@@ -116,23 +98,10 @@ const save = async (type: string, data: string) => {
   }
 };
 
-// const toggle = async (v: boolean) => {
-//   try {
-//     await api.put('config', {
-//       type: 'config',
-//       data: {
-//         minishell: v,
-//       },
-//     });
-//     $q.notify({
-//       position: 'top',
-//       message: '处理成功',
-//     });
-//   } catch (e) {
-//     $q.notify({
-//       type: 'negative',
-//       message: '除了出错咯!',
-//     });
-//   }
-// };
+const uuid = () => {
+  const url = URL.createObjectURL(new Blob());
+  const uuid = url.toString();
+  URL.revokeObjectURL(url);
+  config.value.wbrtoken = uuid.substring(uuid.lastIndexOf('/') + 1);
+};
 </script>
