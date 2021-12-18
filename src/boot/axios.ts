@@ -1,6 +1,7 @@
 import { boot } from 'quasar/wrappers';
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from 'axios';
-import { LoadingBar } from 'quasar';
+import { LoadingBar, LocalStorage } from 'quasar';
+import router from 'src/router';
 
 declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
@@ -13,6 +14,9 @@ const api = axios.create({ baseURL: process.env.baseURL });
 api.interceptors.request.use(
   async (request) => {
     LoadingBar.start();
+    if (LocalStorage.getItem('token')) {
+      request.headers.Authorization = `token ${LocalStorage.getItem<string>('token') ?? ''}`
+    }
     return Promise.resolve(request);
   },
   async (error) => {
@@ -22,11 +26,14 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(async (response: AxiosResponse) => {
-    LoadingBar.stop();
-    return Promise.resolve(response.data);
-  },
+  LoadingBar.stop();
+  return Promise.resolve(response.data);
+},
   async (error: AxiosError) => {
     LoadingBar.stop();
+    if (error.response?.status === 401 || 403) {
+      void router.push('/login')
+    }
     return Promise.reject(error.response?.data);
   }
 );
