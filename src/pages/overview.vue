@@ -5,13 +5,13 @@
   </q-page>
   <q-footer elevated :class="$q.dark.isActive ? 'q-dark' : 'bg-white'">
     <q-toolbar>
-      <q-btn disable flat color="primary" :label="`VERSION: ${view.version}`">
-        <q-badge
-          color="red"
-          rounded
-          floating
-          v-if="view.version !== view.newversion"
-        />
+      <q-btn
+        @click="update"
+        flat
+        color="primary"
+        :label="`VERSION: ${view.version}`"
+      >
+        <q-badge color="red" rounded floating v-if="view.newversion" />
       </q-btn>
       <q-space />
       <q-btn
@@ -25,6 +25,24 @@
       />
     </q-toolbar>
   </q-footer>
+  <q-dialog v-model="dialog" position="bottom">
+    <q-card style="width: 700px; max-width: 80vw">
+      <q-linear-progress :value="1.0" color="pink" />
+      <q-card-section>
+        <q-scroll-area style="height: 480px; max-width: 700px">
+          <div
+            class="text-grey"
+            style="
+              white-space: pre-line;
+              word-wrap: break-word;
+              word-break: break-all;
+            "
+            v-html="log"
+          ></div>
+        </q-scroll-area>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script lang="ts">
@@ -44,6 +62,8 @@ export default defineComponent({
   },
   setup() {
     const $q = useQuasar();
+    const log = ref('');
+    const dialog = ref(false);
     const view = ref<Partial<Overview>>({});
     const status = ref<Partial<V2Pstatus>>({});
     const msg = ref<Partial<Message>>({});
@@ -83,9 +103,26 @@ export default defineComponent({
       view.value.anyproxy!.enable = !view.value.anyproxy?.enable;
     });
 
+    const update = async () => {
+      try {
+        log.value = await api.get(
+          'https://raw.githubusercontent.com/elecV2/elecV2P/master/logs/update.log'
+        );
+        dialog.value = true;
+      } catch (error) {
+        $q.notify({
+          type: 'negative',
+          message: '加载数据失败!',
+        });
+      }
+    };
+
     return {
       view,
       date,
+      log,
+      dialog,
+      update,
     };
   },
 });
