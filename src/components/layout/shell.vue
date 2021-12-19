@@ -7,7 +7,7 @@
     transition-hide="slide-down"
   >
     <q-card>
-      <q-bar class="bg-white text-white">
+      <q-bar :class="$q.dark.isActive ? 'q-dark' : 'bg-white text-white'">
         <q-btn
           dense
           flat

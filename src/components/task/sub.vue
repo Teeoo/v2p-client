@@ -7,7 +7,7 @@
     transition-hide="rotate"
   >
     <q-card flat>
-      <q-bar class="bg-white text-white">
+      <q-bar :class="$q.dark.isActive ? 'q-dark' : 'bg-white text-white'">
         <q-btn
           dense
           flat
