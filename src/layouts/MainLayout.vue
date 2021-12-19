@@ -39,7 +39,7 @@ const browser_download_url = ref('');
 const minishell = ref(false);
 const $store = useInitStore();
 const router = useRouter();
-const ws = inject('ws') as WebSocket;
+let ws = inject('ws') as WebSocket;
 
 if (ws.readyState === 3) {
   const url =
@@ -61,6 +61,7 @@ if (ws.readyState === 3) {
       position: 'bottom',
       message: '成功建立ws连接',
     });
+    ws = socket;
     socket.send(JSON.stringify({ type: 'ready', data: 'init' }));
     socket.send(JSON.stringify({ type: 'ready', data: 'hold' }));
     socket.send(JSON.stringify({ type: 'ready', data: 'message' }));
@@ -176,6 +177,13 @@ if (ws.readyState === 3) {
 
 onMounted(async () => {
   $q.dark.set($q.localStorage.getItem<boolean>('dark') ?? 'auto');
+  if (ws.readyState !== 3) {
+    ws.send(JSON.stringify({ type: 'ready', data: 'minishell' }));
+    ws.send(
+      JSON.stringify({ type: 'ready', data: 'minishell', id: $store.id })
+    );
+    ws.send(JSON.stringify({ type: 'shell', data: 'cwd', id: $store.id }));
+  }
   if (
     !date.isSameDate(
       $q.localStorage.getItem<Date>('verCheck') ?? 0,
@@ -250,4 +258,29 @@ const upgrade = async () => {
 const toggleLeftDrawer = (b: boolean) => {
   leftDrawerOpen.value = b;
 };
+
+ws.addEventListener('message', (e) => {
+  const result = JSON.parse(e.data) as {
+    type: string;
+    data:
+      | {
+          type: string;
+          data: string;
+        }
+      | string;
+  };
+  if (result.type === 'minishell') {
+    let text = result.data;
+    if (
+      String(text).search('dist.zip && unzip -o dist.zip -cwd=web') !== -1 &&
+      String(text).search('finished') !== -1
+    ) {
+      $q.notify({
+        position: 'top',
+        message: '升级成功按 Shift+F5 刷新缓存',
+      });
+      $q.localStorage.set('version', $store.tag_name ?? '未知版本');
+    }
+  }
+});
 </script>
