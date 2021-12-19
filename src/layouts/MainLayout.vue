@@ -39,131 +39,140 @@ const browser_download_url = ref('');
 const minishell = ref(false);
 const $store = useInitStore();
 const router = useRouter();
-
-const url =
-  (process.env.wsUrl as string) ??
-  `${location.protocol == 'http:' ? 'ws://' : 'wss://'}${
-    location.host
-  }/elecV2P`;
-const socket = new WebSocket(
-  `${url}?token=${$q.localStorage.getItem<string>('token') ?? ''}`
-);
-const init = () => {
-  socket.addEventListener('open', handleOpen, false);
-  socket.addEventListener('close', handleClose, false);
-  socket.addEventListener('error', handleError, false);
-};
-const handleOpen = () => {
-  $q.notify({
-    progress: true,
-    position: 'bottom',
-    message: '成功建立ws连接',
-  });
-  socket.send(JSON.stringify({ type: 'ready', data: 'init' }));
-  socket.send(JSON.stringify({ type: 'ready', data: 'hold' }));
-  socket.send(JSON.stringify({ type: 'ready', data: 'message' }));
-  socket.send(JSON.stringify({ type: 'ready', data: 'evui' }));
-  socket.send(JSON.stringify({ type: 'ready', data: 'elecV2Pstatus' }));
-  socket.send(JSON.stringify({ type: 'ready', data: 'jsrunstatus' }));
-  socket.addEventListener('message', (e: MessageEvent) => {
-    const result = JSON.parse(e.data) as {
-      type: string;
-      data: { id: string; vernum: number };
-    };
-    if (result.type === 'init') {
-      $store.setInitVal({ id: result.data.id, version: result.data.vernum });
-      socket.send(
-        JSON.stringify({ type: 'init', data: 'OK', id: result.data.id })
-      );
-      socket.send(
-        JSON.stringify({ type: 'ready', data: 'init', id: result.data.id })
-      );
-      socket.send(
-        JSON.stringify({ type: 'ready', data: 'hold', id: result.data.id })
-      );
-      socket.send(
-        JSON.stringify({ type: 'ready', data: 'message', id: result.data.id })
-      );
-      socket.send(
-        JSON.stringify({ type: 'ready', data: 'evui', id: result.data.id })
-      );
-      socket.send(
-        JSON.stringify({
-          type: 'ready',
-          data: 'elecV2Pstatus',
-          id: result.data.id,
-        })
-      );
-      socket.send(
-        JSON.stringify({
-          type: 'ready',
-          data: 'jsrunstatus',
-          id: result.data.id,
-        })
-      );
-      socket.send(JSON.stringify({ type: 'ready', data: 'minishell' }));
-      socket.send(
-        JSON.stringify({ type: 'ready', data: 'minishell', id: $store.id })
-      );
-      socket.send(
-        JSON.stringify({ type: 'shell', data: 'cwd', id: $store.id })
-      );
-    }
-  });
-  socket.addEventListener('message', (e: MessageEvent) => {
-    const result = JSON.parse(e.data) as {
-      type: string;
-      data:
-        | {
-            type: string;
-            data: string;
-          }
-        | string;
-    };
-    if (result.type === 'minishell') {
-      let text = result.data;
-      if (
-        String(text).search('dist.zip && unzip -o dist.zip -cwd=web') !== -1 &&
-        String(text).search('finished') !== -1
-      ) {
-        $q.notify({
-          position: 'top',
-          message: '升级成功按 Shift+F5 刷新缓存',
-        });
-        $q.localStorage.set('version', $store.tag_name ?? '未知版本');
-      }
-    }
-  });
-};
-
-function handleClose(e: CloseEvent) {
-  $q.notify({
-    progress: true,
-    position: 'bottom',
-    type: 'negative',
-    message: e.reason,
-  });
-  if (e.code === 4003) {
-    void router.push('/login');
-  }
-  console.log('websocket close', e);
-}
-
-function handleError(e: Event) {
-  $q.notify({
-    progress: true,
-    position: 'bottom',
-    type: 'negative',
-    message: 'ws已关闭',
-  });
-  console.log('websocket error', e);
-}
-
-init();
-
-provide('ws', socket);
-
 const ws = inject('ws') as WebSocket;
+
+if (ws.readyState === 3) {
+  const url =
+    (process.env.wsUrl as string) ??
+    `${location.protocol == 'http:' ? 'ws://' : 'wss://'}${
+      location.host
+    }/elecV2P`;
+  const socket = new WebSocket(
+    `${url}?token=${$q.localStorage.getItem<string>('token') ?? ''}`
+  );
+  const init = () => {
+    socket.addEventListener('open', handleOpen, false);
+    socket.addEventListener('close', handleClose, false);
+    socket.addEventListener('error', handleError, false);
+  };
+  const handleOpen = () => {
+    $q.notify({
+      progress: true,
+      position: 'bottom',
+      message: '成功建立ws连接',
+    });
+    socket.send(JSON.stringify({ type: 'ready', data: 'init' }));
+    socket.send(JSON.stringify({ type: 'ready', data: 'hold' }));
+    socket.send(JSON.stringify({ type: 'ready', data: 'message' }));
+    socket.send(JSON.stringify({ type: 'ready', data: 'evui' }));
+    socket.send(JSON.stringify({ type: 'ready', data: 'elecV2Pstatus' }));
+    socket.send(JSON.stringify({ type: 'ready', data: 'jsrunstatus' }));
+    socket.addEventListener('message', (e: MessageEvent) => {
+      const result = JSON.parse(e.data) as {
+        type: string;
+        data: { id: string; vernum: number };
+      };
+      if (result.type === 'init') {
+        $store.setInitVal({
+          id: result.data.id,
+          version: result.data.vernum,
+        });
+        socket.send(
+          JSON.stringify({ type: 'init', data: 'OK', id: result.data.id })
+        );
+        socket.send(
+          JSON.stringify({ type: 'ready', data: 'init', id: result.data.id })
+        );
+        socket.send(
+          JSON.stringify({ type: 'ready', data: 'hold', id: result.data.id })
+        );
+        socket.send(
+          JSON.stringify({
+            type: 'ready',
+            data: 'message',
+            id: result.data.id,
+          })
+        );
+        socket.send(
+          JSON.stringify({ type: 'ready', data: 'evui', id: result.data.id })
+        );
+        socket.send(
+          JSON.stringify({
+            type: 'ready',
+            data: 'elecV2Pstatus',
+            id: result.data.id,
+          })
+        );
+        socket.send(
+          JSON.stringify({
+            type: 'ready',
+            data: 'jsrunstatus',
+            id: result.data.id,
+          })
+        );
+        socket.send(JSON.stringify({ type: 'ready', data: 'minishell' }));
+        socket.send(
+          JSON.stringify({ type: 'ready', data: 'minishell', id: $store.id })
+        );
+        socket.send(
+          JSON.stringify({ type: 'shell', data: 'cwd', id: $store.id })
+        );
+      }
+    });
+    socket.addEventListener('message', (e: MessageEvent) => {
+      const result = JSON.parse(e.data) as {
+        type: string;
+        data:
+          | {
+              type: string;
+              data: string;
+            }
+          | string;
+      };
+      if (result.type === 'minishell') {
+        let text = result.data;
+        if (
+          String(text).search('dist.zip && unzip -o dist.zip -cwd=web') !==
+            -1 &&
+          String(text).search('finished') !== -1
+        ) {
+          $q.notify({
+            position: 'top',
+            message: '升级成功按 Shift+F5 刷新缓存',
+          });
+          $q.localStorage.set('version', $store.tag_name ?? '未知版本');
+        }
+      }
+    });
+  };
+
+  function handleClose(e: CloseEvent) {
+    $q.notify({
+      progress: true,
+      position: 'bottom',
+      type: 'negative',
+      message: e.reason,
+    });
+    if (e.code === 4003) {
+      void router.push('/login');
+    }
+    console.log('websocket close', e);
+  }
+
+  function handleError(e: Event) {
+    $q.notify({
+      progress: true,
+      position: 'bottom',
+      type: 'negative',
+      message: 'ws已关闭',
+    });
+    console.log('websocket error', e);
+  }
+
+  init();
+
+  provide('ws', socket);
+}
 
 onMounted(async () => {
   $q.dark.set($q.localStorage.getItem<boolean>('dark') ?? 'auto');

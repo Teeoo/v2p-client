@@ -31,7 +31,7 @@ api.interceptors.response.use(async (response: AxiosResponse) => {
 },
   async (error: AxiosError) => {
     LoadingBar.stop();
-    if (error.response?.status === 401 || 403) {
+    if (error.response?.config.url?.search('api.github') === -1 && (error.response?.status === 401 || 403)) {
       void router.push('/login')
     }
     return Promise.reject(error.response?.data);
