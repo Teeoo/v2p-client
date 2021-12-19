@@ -60,9 +60,8 @@ const blacklist = ref('');
 
 watchEffect(() => {
   config.value = prop.modelValue;
-  /* eslint-disable @typescript-eslint/no-non-null-assertion */
-  whitelist.value = prop.modelValue.security!.whitelist.toString();
-  blacklist.value = prop.modelValue.security!.blacklist.toString();
+  whitelist.value = prop.modelValue.security?.whitelist?.toString() ?? '';
+  blacklist.value = prop.modelValue.security?.blacklist?.toString() ?? '';
 });
 
 const security = async () => {
