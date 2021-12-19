@@ -14,7 +14,7 @@ const api = axios.create({ baseURL: process.env.baseURL });
 api.interceptors.request.use(
   async (request) => {
     LoadingBar.start();
-    if (LocalStorage.getItem('token')) {
+    if (request.url?.search('github') === -1 && LocalStorage.getItem('token')) {
       request.headers.Authorization = `token ${LocalStorage.getItem<string>('token') ?? ''}`
     }
     return Promise.resolve(request);
